@@ -1,0 +1,43 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+/* 
+path.react-flow__edge-path {
+  stroke-width: 1;
+}
+ */
+.react-flow__node {
+  background-color: white !important;
+  border: 1px solid #E4E4E4 !important;
+  border-radius: 10px !important;
+  padding: 4px !important;
+  /* width: fit-content !important; */
+}
+.react-flow__node.selected  {
+  border: 1px solid #007AFF !important;
+  box-shadow: none !important;
+}
+.react-flow__handle {
+  /* display: none !important; */
+  /* opacity: 0.2; */
+  background-color: white !important;
+  border: 1px solid #007AFF !important;
+}
+
+.react-flow__node.selected > .react-flow__handle {
+  
+}
+
+.react-flow__edge.selected path {
+  stroke: #bb0000 !important;
+}
