@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import Dagre from '@dagrejs/dagre';
 import ReactFlow, {
   MiniMap,
@@ -11,7 +11,8 @@ import ReactFlow, {
   Position,
   Panel,
   useReactFlow,
-  ReactFlowProvider
+  ReactFlowProvider,
+  MarkerType
 } from 'reactflow';
 
 import 'reactflow/dist/style.css';
@@ -19,12 +20,40 @@ import 'reactflow/dist/style.css';
 
 const initialNodes = [
   { id: '1', position: { x: 0, y: 0 }, data: { label: 'the integral, is the area under the graph of h(r) vs r' }, sourcePosition: 'right', targetPosition: 'left' },
-  { id: '2', position: { x: 200, y: 0 }, data: { label: 'the line intersects at time B' }, sourcePosition: 'right', targetPosition: 'left', },
-  { id: '3', position: { x: 400, y: 0 }, data: { label: 'the slopes are the same at time A' }, sourcePosition: 'right', targetPosition: 'left', },
+  { id: '2', position: { x: 100, y: -100 }, data: { label: 'the line intersects at time B' }, sourcePosition: 'right', targetPosition: 'left', },
+  { id: '3', position: { x: 400, y: 100 }, data: { label: 'the slopes are the same at time A' }, sourcePosition: 'right', targetPosition: 'left', },
 ];
 const initialEdges = [
-  { id: 'e1-2', type: 'bezier', source: '1', target: '2', },
-  { id: 'e2-3', type: 'bezier', source: '2', target: '3', }
+  {
+    id: 'e1-2', type: 'smoothstep', source: '1', target: '2', markerEnd: {
+      type: MarkerType.ArrowClosed,
+      width: 15,
+      height: 15,
+      color: 'inherit',
+    },
+    label: 'is',
+    style: {
+      strokeWidth: 1.5,
+    },
+    pathOptions: {
+      borderRadius: 20,
+    }
+  },
+  {
+    id: 'e2-3', type: 'smoothstep', source: '2', target: '3', markerEnd: {
+      type: MarkerType.ArrowClosed,
+      width: 15,
+      height: 15,
+      color: 'inherit',
+    },
+    label: 'or',
+    style: {
+      strokeWidth: 1.5,
+    },
+    pathOptions: {
+      borderRadius: 20,
+    }
+  }
 ];
 
 const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
@@ -49,18 +78,33 @@ const getLayoutedElements = (nodes, edges, options) => {
 
 
 export default function App() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [fullsize, setFullsize] = useState(false);
   const [width, setWidth] = useState('800px');
   const [height, setHeight] = useState('400px');
   const { fitView } = useReactFlow();
-  const [showControls, setShowControls] = useState(true);
-  const [showMinimap, setShowMinimap] = useState(true);
+  const [showControls, setShowControls] = useState(false);
+  const [showMinimap, setShowMinimap] = useState(false);
   const [text, setText] = useState("");
 
+  useEffect(() => {
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+  }, []);
+
   const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
+    (params) => {
+      const updatedParams = {
+        ...params, type: 'smoothstep', style: {
+          strokeWidth: 1.5,
+        },
+        pathOptions: {
+          borderRadius: 20,
+        }
+      };
+      setEdges((eds) => addEdge(updatedParams, eds));
+    },
     [setEdges],
   );
 
@@ -73,7 +117,9 @@ export default function App() {
       setEdges([...layouted.edges]);
 
       window.requestAnimationFrame(() => {
-        fitView();
+        setTimeout(() => {
+          fitView();
+        }, 0);
       });
     },
     [nodes, edges]
@@ -114,15 +160,22 @@ export default function App() {
     }
   }
 
+  const isAppleOS = () =>
+    window.navigator.platform.startsWith("Mac") ||
+    window.navigator.platform.startsWith("iPhone") ||
+    window.navigator.platform.startsWith("iPad") ||
+    window.navigator.platform.startsWith("iPod");
+
   return (
-    <div style={{ width: '99vw', height: '99vh', position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+    <div style={{ width: '100%', height: '100%', position: 'relative', position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
       <div style={{
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        gap: '1rem'
+        gap: '1rem',
+        marginBottom:'10px'
       }} >
-        <small>Select a node or edge and press 'delete' to remove</small>
+        <small>Select a node or edge and press 'delete' or 'backspace' to remove</small>
         <div>
           <label htmlFor="controls">Show Controls</label>
           <input type="checkbox" checked={showControls} id="controls" name='controls' onClick={() => setShowControls(!showControls)} />
@@ -147,14 +200,13 @@ export default function App() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             defaultMarkerColor='#bb0000'
-            connectionLineType='step'
+            connectionLineType='smoothstep'
+            // connectionRadius={100}
             fitView={true}
-            edgeTypes={"bezier"}
             proOptions={{
               hideAttribution: true
             }}
-            deleteKeyCode={'Delete'}
-          // connectionMode='loose'
+            deleteKeyCode={isAppleOS() ? "Backspace" : "Delete"}
           >
             <Panel position="top-right">
               <button onClick={() => onLayout('TB')}>vertical layout</button>

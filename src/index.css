@@ -38,6 +38,18 @@ path.react-flow__edge-path {
   
 }
 
+/* .react-flow__edge > path {
+  stroke-width: 2px !important;
+} */
+
 .react-flow__edge.selected path {
   stroke: #bb0000 !important;
+  
 }
+
+.react-flow__arrowhead > polyline {
+  /* stroke: blue !important;
+  fill: green !important; */
+  stroke-width: 1px !important;
+}
+
